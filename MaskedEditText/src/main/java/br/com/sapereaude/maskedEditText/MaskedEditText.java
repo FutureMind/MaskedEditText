@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
@@ -15,6 +14,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import io.reactivex.Flowable;
+import io.reactivex.processors.BehaviorProcessor;
 
 import static android.content.ContentValues.TAG;
 
@@ -39,6 +41,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 	private OnFocusChangeListener focusChangeListener;
     private String allowedChars;
     private String deniedChars;
+    private BehaviorProcessor<String> rawTextState = BehaviorProcessor.create();
 
 
     public MaskedEditText(Context context) {
@@ -308,6 +311,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 			editingOnChanged = false;
 			editingAfter = false;
 			ignore = false;
+			notifyRawTextChanged(rawText.getText());
 		}
 	}
 
@@ -469,5 +473,13 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
         }
 
 		return string;
+	}
+
+	private void notifyRawTextChanged(String text) {
+		rawTextState.onNext(text == null ? "" : text);
+	}
+
+	public Flowable<String> observeRawTextChanges() {
+		return rawTextState;
 	}
 }
