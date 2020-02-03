@@ -43,7 +43,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
     private String allowedChars;
     private String deniedChars;
     private BehaviorProcessor<String> rawTextState = BehaviorProcessor.create();
-
+	private boolean blockFurtherSelectionChanges = false;
 
     public MaskedEditText(Context context) {
 		super(context);
@@ -335,7 +335,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 		// On Android 4+ this method is being called more than 1 time if there is a hint in the EditText, what moves the cursor to left
 		// Using the boolean var selectionChanged to limit to one execution
 
-		if(initialized ){
+		if(initialized){
 			if(!selectionChanged) {
                 selStart = fixSelection(selStart);
                 selEnd = fixSelection(selEnd);
@@ -350,8 +350,11 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 
 				setSelection(selStart, selEnd);
 				selectionChanged = true;
-			} else{
-			    //check to see if the current selection is outside the already entered text
+				blockFurtherSelectionChanges = true;
+			} else if (blockFurtherSelectionChanges) {
+				blockFurtherSelectionChanges = false;
+			} else {
+				//check to see if the current selection is outside the already entered text
 				if(selStart > rawText.length() - 1){
 					final int start = fixSelection(selStart);
 					final int end = fixSelection(selEnd);
