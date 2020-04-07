@@ -287,7 +287,15 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 			if(count > 0) {
 				int startingPosition = maskToRaw[nextValidPosition(start)];
 				String addedString = s.subSequence(start, start + count).toString();
-				count = rawText.addToString(clear(addedString), startingPosition, maxRawLength);
+				try {
+					count = rawText.addToString(clear(addedString), startingPosition, maxRawLength);
+				} catch (IllegalArgumentException e) {
+					// when exception is caught, reset view
+					cleanUp();
+					setText("");
+					return;
+				}
+
 				if(initialized) {
 					int currentPosition;
 					if(startingPosition + count < rawToMask.length)
