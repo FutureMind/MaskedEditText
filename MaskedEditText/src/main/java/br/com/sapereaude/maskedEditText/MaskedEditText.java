@@ -16,8 +16,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
-import io.reactivex.Flowable;
-import io.reactivex.processors.BehaviorProcessor;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.processors.BehaviorProcessor;
 
 import static android.content.ContentValues.TAG;
 

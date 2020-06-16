@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-String projectVersion = "1.0.13"
+String projectVersion = "1.0.14"
 String projectGroup = "ru.egslava"
 
 version = projectVersion
@@ -30,8 +30,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
     // Rx
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.11'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
 
     testImplementation 'junit:junit:4.12'
 }
