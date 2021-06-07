@@ -16,14 +16,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.BehaviorProcessor;
 import kotlinx.coroutines.flow.Flow;
-import kotlinx.coroutines.flow.MutableSharedFlow;
 import kotlinx.coroutines.reactive.ReactiveFlowKt;
 
 import static android.content.ContentValues.TAG;
-import static io.reactivex.rxjava3.core.BackpressureOverflowStrategy.DROP_OLDEST;
 
 public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 
