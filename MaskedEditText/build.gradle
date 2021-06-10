@@ -39,6 +39,13 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-repositories {
-    mavenCentral()
+afterEvaluate {
+    publishing {
+        publications {
+            library(MavenPublication) {
+                groupId = 'ru.egslava.MaskedEditText'
+                version = projectVersion
+            }
+        }
+    }
 }
