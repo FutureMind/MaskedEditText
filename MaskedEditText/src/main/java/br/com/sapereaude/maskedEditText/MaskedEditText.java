@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.text.TextUtilsCompat;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
@@ -15,6 +13,12 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.AppCompatEditText;
+
+import io.reactivex.rxjava3.processors.BehaviorProcessor;
+import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.reactive.ReactiveFlowKt;
 
 import static android.content.ContentValues.TAG;
 
@@ -49,10 +53,11 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 	private int lastValidMaskPosition;
 	private boolean selectionChanged;
 	private OnFocusChangeListener focusChangeListener;
-    private String allowedChars;
-    private String deniedChars;
-    private boolean shouldKeepText;
-
+  private String allowedChars;
+  private String deniedChars;
+  private BehaviorProcessor<String> rawTextState = BehaviorProcessor.create();
+	private boolean blockFurtherSelectionChanges = false;
+  
     public MaskedEditText(Context context) {
 		super(context);
 		init();
@@ -102,6 +107,11 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 
 	@Override
 	public void onRestoreInstanceState(Parcelable state) {
+    	if (!(state instanceof Bundle)) {
+    		super.onRestoreInstanceState(state);
+    		return;
+		}
+
 		Bundle bundle = (Bundle) state;
 		keepHint = bundle.getBoolean("keepHint", false);
 		super.onRestoreInstanceState(((Bundle) state).getParcelable("super"));
@@ -299,7 +309,15 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 			if(count > 0) {
 				int startingPosition = maskToRaw[nextValidPosition(start)];
 				String addedString = s.subSequence(start, start + count).toString();
-				count = rawText.addToString(clear(addedString), startingPosition, maxRawLength);
+				try {
+					count = rawText.addToString(clear(addedString), startingPosition, maxRawLength);
+				} catch (IllegalArgumentException e) {
+					// when exception is caught, reset view
+					cleanUp();
+					setText("");
+					return;
+				}
+
 				if(initialized) {
 					int currentPosition;
 					if(startingPosition + count < rawToMask.length)
@@ -329,6 +347,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 			editingOnChanged = false;
 			editingAfter = false;
 			ignore = false;
+			notifyRawTextChanged(rawText.getText());
 		}
 	}
 
@@ -346,7 +365,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 		// On Android 4+ this method is being called more than 1 time if there is a hint in the EditText, what moves the cursor to left
 		// Using the boolean var selectionChanged to limit to one execution
 
-		if(initialized ){
+		if(initialized){
 			if(!selectionChanged) {
                 selStart = fixSelection(selStart);
                 selEnd = fixSelection(selEnd);
@@ -361,8 +380,11 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 
 				setSelection(selStart, selEnd);
 				selectionChanged = true;
-			} else{
-			    //check to see if the current selection is outside the already entered text
+				blockFurtherSelectionChanges = true;
+			} else if (blockFurtherSelectionChanges) {
+				blockFurtherSelectionChanges = false;
+			} else {
+				//check to see if the current selection is outside the already entered text
 				if(selStart > rawText.length() - 1){
 					final int start = fixSelection(selStart);
 					final int end = fixSelection(selEnd);
@@ -465,10 +487,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 			range.setEnd(rawText.length());
 		}
 		if(range.getStart() == range.getEnd() && start < end) {
-			int newStart = previousValidPosition(range.getStart() - 1);
-			if(newStart < range.getStart()) {
-				range.setStart(newStart);
-			}
+			range.setEnd(range.getEnd() + 1);
 		}
 		return range;
 	}
@@ -493,5 +512,13 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
         }
 
 		return string;
+	}
+
+	private void notifyRawTextChanged(String text) {
+		rawTextState.onNext(text == null ? "" : text);
+	}
+
+	public Flow<String> observeRawTextChanges() {
+		return ReactiveFlowKt.asFlow(rawTextState);
 	}
 }

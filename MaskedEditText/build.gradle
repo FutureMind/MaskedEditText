@@ -1,24 +1,20 @@
-plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-}
-
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-String projectVersion = "1.0.5"
+String projectVersion = "1.0.16"
 String projectGroup = "ru.egslava"
 
 version = projectVersion
 group = projectGroup
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 30
+    buildToolsVersion '28.0.3'
 
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 25
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName projectVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -30,100 +26,19 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.2.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 
-    testCompile 'junit:junit:4.12'
+    // Rx
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.4.3'
+
+    testImplementation 'junit:junit:4.12'
 }
 
-
-// bintray deploy ....
-String projectName = "edittext-mask"
-String projectDescription = GFileUtils.readFile(new File("README.md"))
-String webUrl = "https://github.com/egslava/edittext-mask"
-String gitUrl = "https://github.com/egslava/edittext-mask.git"
-
-
-install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-                
-                name projectName
-                description projectDescription
-                url webUrl
-
-                inceptionYear '2017' // HARDCODED
-
-                licenses {
-                    license {
-                        name 'MIT'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url webUrl
-                }
-                developers {
-                    developer {
-                        id 'egslava'
-                        name 'Slava Egorenkov'
-                        email 'egslava@gmail.com'
-                    }
-                }
-            }
-        }
-    }
-}
-
-// The end of the gradle file is for JCenter publication.
-// The original code was written with look at Alexander Matveychuk's code
-// and
-// https://www.virag.si/2015/01/publishing-gradle-android-library-to-jcenter/
-
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-bintray {
-    user = bintrayUser
-    key = bintrayApikey
-
-    configurations = ['archives']
-    pkg {
-        repo = "maven"
-        name = projectName
-        userOrg = user
-//        projectUrl = webUrl
-        vcsUrl = gitUrl
-        licenses = ["MIT"]
-        group = projectGroup
-        publish = true
-
-        version {
-            name = projectVersion
-//            desc = projectDescription
-            vcsTag = projectVersion
-        }
-    }
+repositories {
+    mavenCentral()
 }
