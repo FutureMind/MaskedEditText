@@ -1,24 +1,20 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
-String projectVersion = "1.0.18"
-String projectGroup = "ru.egslava"
-
-version = projectVersion
-group = projectGroup
+String version_name = '1.0.18'
 
 android {
     compileSdkVersion 30
     buildToolsVersion '28.0.3'
 
-
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName projectVersion
+        versionName version_name
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    flavorDimensions "version"
 }
 
 dependencies {
@@ -39,13 +35,35 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            library(MavenPublication) {
-                groupId = 'ru.egslava.MaskedEditText'
-                version = projectVersion
-            }
+publishing {
+    publications {
+        versionDebug(MavenPublication) {
+            groupId 'ru.egslava'
+            artifactId 'MaskedEditText'
+            version "$version_name-version-debug"
+            artifact "$buildDir/outputs/aar/MaskedEditText-debug.aar"
+
+            includeDependenciesInPomXml(pom)
+        }
+        versionRelease(MavenPublication) {
+            groupId 'ru.egslava'
+            artifactId 'MaskedEditText'
+            version "$version_name-version-release"
+            artifact "$buildDir/outputs/aar/MaskedEditText-release.aar"
+
+            includeDependenciesInPomXml(pom)
+        }
+    }
+}
+
+private void includeDependenciesInPomXml(pom) {
+    pom.withXml {
+        def dependenciesNode = asNode().appendNode('dependencies')
+        configurations.compile.allDependencies.each { dependency ->
+            def dependencyNode = dependenciesNode.appendNode('dependency')
+            dependencyNode.appendNode('groupId', dependency.group)
+            dependencyNode.appendNode('artifactId', dependency.name)
+            dependencyNode.appendNode('version', dependency.version)
         }
     }
 }
