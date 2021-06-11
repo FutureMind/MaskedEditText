@@ -14,15 +14,9 @@ android {
         versionName version_name
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    flavorDimensions "version"
 }
 
 dependencies {
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
     // Rx
@@ -33,37 +27,21 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.4.3'
 
     testImplementation 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 }
 
-publishing {
-    publications {
-        versionDebug(MavenPublication) {
-            groupId 'ru.egslava'
-            artifactId 'MaskedEditText'
-            version "$version_name-version-debug"
-            artifact "$buildDir/outputs/aar/MaskedEditText-debug.aar"
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
 
-            includeDependenciesInPomXml(pom)
-        }
-        versionRelease(MavenPublication) {
-            groupId 'ru.egslava'
-            artifactId 'MaskedEditText'
-            version "$version_name-version-release"
-            artifact "$buildDir/outputs/aar/MaskedEditText-release.aar"
-
-            includeDependenciesInPomXml(pom)
-        }
-    }
-}
-
-private void includeDependenciesInPomXml(pom) {
-    pom.withXml {
-        def dependenciesNode = asNode().appendNode('dependencies')
-        configurations.compile.allDependencies.each { dependency ->
-            def dependencyNode = dependenciesNode.appendNode('dependency')
-            dependencyNode.appendNode('groupId', dependency.group)
-            dependencyNode.appendNode('artifactId', dependency.name)
-            dependencyNode.appendNode('version', dependency.version)
+                groupId 'ru.egslava'
+                artifactId 'MaskedEditText'
+                version "$version_name-version-release"
+            }
         }
     }
 }
