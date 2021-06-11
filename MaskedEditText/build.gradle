@@ -1,32 +1,22 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'
 
-String projectVersion = "1.0.16"
-String projectGroup = "ru.egslava"
-
-version = projectVersion
-group = projectGroup
+String version_name = '1.0.18'
 
 android {
     compileSdkVersion 30
     buildToolsVersion '28.0.3'
 
-
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName projectVersion
+        versionName version_name
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 }
 
 dependencies {
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
     // Rx
@@ -37,8 +27,21 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.4.3'
 
     testImplementation 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 }
 
-repositories {
-    mavenCentral()
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId 'ru.egslava'
+                artifactId 'MaskedEditText'
+                version "$version_name-version-release"
+            }
+        }
+    }
 }
