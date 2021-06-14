@@ -42,6 +42,14 @@ afterEvaluate {
                 artifactId 'MaskedEditText'
                 version "$version_name-version-release"
             }
+
+            debug(MavenPublication) {
+                from components.debug
+
+                groupId 'ru.egslava'
+                artifactId 'MaskedEditText'
+                version "$version_name-version-debug"
+            }
         }
     }
 }
